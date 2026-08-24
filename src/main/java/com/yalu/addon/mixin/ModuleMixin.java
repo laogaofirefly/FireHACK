@@ -2,37 +2,30 @@ package com.yalu.addon.mixin;
 
 import com.yalu.addon.TranslateAddon;
 import com.yalu.addon.Translator;
-import meteordevelopment.meteorclient.MeteorClient;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.Utils;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.logging.Logger;
-
 import static com.yalu.addon.TranslateAddon.MC;
 import static com.yalu.addon.TranslateAddon.TRANSLATOR;
 
-@Mixin(value = Module.class,remap = false,priority = 999)
+/** Optional compatibility mixin: translation must never prevent a module from loading. */
+@Mixin(value = Module.class, remap = false, priority = 900)
 public abstract class ModuleMixin {
-    @Final
-    @Mutable
-    @Shadow
-    public String title;
-    @Mutable
-    @Shadow
-    @Final
-    public String description;
-    @Unique
-    public String name;
-    @Inject(method = "<init>*", at = @At("RETURN"))
-    public void onInit(CallbackInfo ci){
-        TRANSLATOR.reload(MC.getResourceManager());
-        String ModuleKey = "Module.Meteor." + this.name;
-        String DescriptionKey = "Module.Meteor." + this.name + ".Description";
-        this.title = TRANSLATOR.Translate(ModuleKey, this.name);
-        this.description = TRANSLATOR.Translate(DescriptionKey,this.description);
+    @Mutable @Shadow @Final public String title;
+    @Mutable @Shadow @Final public String description;
+    @Shadow @Final public String name;
+
+    @Inject(method = "<init>*", at = @At("RETURN"), require = 0)
+    private void firehack$translate(CallbackInfo ci) {
+        if (MC == null || name == null) return;
+        try {
+            TRANSLATOR.reload(MC.getResourceManager());
+            title = TRANSLATOR.translate("Module.Meteor." + name, name);
+            description = TRANSLATOR.translate("Module.Meteor." + name + ".Description", description);
+        } catch (Throwable ignored) {
+            // Keep the original Meteor text if a future Meteor build changes its internals.
+        }
     }
 }

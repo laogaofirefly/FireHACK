@@ -20,8 +20,11 @@ import java.util.function.BiConsumer;
 
 public class Translator {
     private final JsonObject langJson = new JsonObject();
-    private Map<String, String> currentLangStrings;
-    public String Translate(String key,String name) {
+    private volatile Map<String, String> currentLangStrings = Collections.emptyMap();
+    private volatile ResourceManager loadedManager;
+
+    public String translate(String key, String fallback) {
+        if (key == null || fallback == null) return fallback;
         String value = this.currentLangStrings.get(key);
         if(value != null){
             return value;
@@ -39,16 +42,17 @@ public class Translator {
     }
 
 
-    public void reload(ResourceManager manager)
+    public synchronized void reload(ResourceManager manager)
     {
+        if (manager == null || manager == loadedManager) return;
         HashMap<String, String> currentLangStrings = new HashMap<>();
         //从mixin获取管理器然后获取当前语言的语言代码，然后加载翻译文件
 //		//这个方法会将语言文件内的键值对赋值给currentLangStrings（这是个HASHMAP（键值对））
         loadTranslations(manager, getCurrentLangCodes(),
             currentLangStrings::put);
         //设置不可变的map 也就是说现在这个currentLangStrings就是当前语言的键值对翻译了
-        this.currentLangStrings =
-            Collections.unmodifiableMap(currentLangStrings);
+        this.currentLangStrings = Collections.unmodifiableMap(currentLangStrings);
+        this.loadedManager = manager;
     }
 
     private Iterable<String> getCurrentLangCodes() {

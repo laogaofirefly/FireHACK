@@ -15,8 +15,9 @@ import java.util.function.Consumer;
 import static com.yalu.addon.TranslateAddon.MC;
 import static com.yalu.addon.TranslateAddon.TRANSLATOR;
 
-@Mixin(value = Setting.class,remap = false)
+@Mixin(value = Setting.class, remap = false, priority = 900)
 public class SettingMixin {
+    @Shadow @Final public String name;
     @Mutable
     @Final
     @Shadow
@@ -25,13 +26,15 @@ public class SettingMixin {
     @Final
     @Shadow
     public String description;
-    @Inject(method = "<init>",at = @At("TAIL"))
-    public void init(String name, String description, Object defaultValue, Consumer onChanged, Consumer onModuleActivated, IVisible visible, CallbackInfo ci){
-        TRANSLATOR.reload(MC.getResourceManager());
-        String SettingKey = "Setting.Meteor." + name;
-        String DescriptionKey = "Setting.Meteor." + name + ".Description";
-        this.title = TRANSLATOR.Translate(SettingKey,name);
-//        this.title = "sb";
-        this.description = TRANSLATOR.Translate(DescriptionKey,description);
+    @Inject(method = "<init>*", at = @At("RETURN"), require = 0)
+    private void firehack$translate(CallbackInfo ci) {
+        if (MC == null) return;
+        try {
+            TRANSLATOR.reload(MC.getResourceManager());
+            this.title = TRANSLATOR.translate("Setting.Meteor." + this.name, this.name);
+            this.description = TRANSLATOR.translate("Setting.Meteor." + this.name + ".Description", this.description);
+        } catch (Throwable ignored) {
+            // Preserve vanilla/Meteor values if a setting implementation changes.
+        }
     }
 }

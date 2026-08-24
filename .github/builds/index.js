@@ -8,13 +8,20 @@ import { getMcVersion } from "./mc_version.js"
 const buildNumber = process.argv[2];
 const branch = process.argv[3];
 const compareUrl = process.argv[4];
+if (!compareUrl || !/^https?:\/\//.test(compareUrl)) {
+    console.warn("Skipping webhook: compare URL is missing or invalid");
+    process.exit(0);
+}
 const success = process.argv[5] === "true";
 
 const mcVersion = await getMcVersion();
 
 function sendDiscordWebhook() {
     fetch(compareUrl)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error(`GitHub compare API returned ${res.status}`);
+            return res.json();
+        })
         .then(res => {
             let description = "";
 

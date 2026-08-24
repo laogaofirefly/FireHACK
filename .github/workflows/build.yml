@@ -35,7 +35,7 @@ jobs:
           path: .baritone
       - name: Publish Baritone to local Maven repository
         working-directory: .baritone
-        run: ./gradlew :fabric:publishToMavenLocal --no-daemon --stacktrace
+        run: ./gradlew :fabric:createDist :fabric:publishToMavenLocal --no-daemon --stacktrace
       - name: Set up Node JS
         uses: actions/setup-node@v4
         with:
@@ -55,7 +55,7 @@ jobs:
         if: ${{ failure() }}
         run: |
           cd .github/builds
-          npm run webhook -- ${{ steps.build-number.outputs.number }} ${{ github.ref_name }} https://api.github.com/repos/MeteorDevelopment/meteor-client/compare/${{ github.event.before }}...${{ github.event.after }} false
+          npm run webhook -- ${{ steps.build-number.outputs.number || github.run_number }} ${{ github.ref_name }} https://api.github.com/repos/laogaofirefly/FireHACK/compare/${{ github.event.before }}...${{ github.event.after }} false
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
@@ -68,7 +68,7 @@ jobs:
       - name: Discord webhook
         run: |
           cd .github/builds
-          npm run webhook -- ${{ steps.build-number.outputs.number }} ${{ github.ref_name }} https://api.github.com/repos/MeteorDevelopment/meteor-client/compare/${{ github.event.before }}...${{ github.event.after }} true
+          npm run webhook -- ${{ steps.build-number.outputs.number || github.run_number }} ${{ github.ref_name }} https://api.github.com/repos/laogaofirefly/FireHACK/compare/${{ github.event.before }}...${{ github.event.after }} true
         env:
           SERVER_TOKEN: ${{ secrets.SERVER_TOKEN }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

@@ -10,6 +10,9 @@ on:
       - "main"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -52,18 +55,25 @@ jobs:
 
       - name: Build
         run: ./gradlew build -Pcommit=${{ github.sha }} -Pbuild_number=${{ steps.build-number.outputs.number }}
-
-      - name: Upload compiled JAR files
+      - name: Prepare release JAR files
         if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        run: |
+          mkdir -p release-assets
+          cp build/libs/*.jar release-assets/
+          cp .baritone/fabric/build/libs/*.jar release-assets/
+          cp .baritone/dist/*.jar release-assets/ 2>/dev/null || true
+          ls -lh release-assets
+
+      - name: Publish JAR files to GitHub Release
+        if: ${{ success() }}
+        uses: softprops/action-gh-release@v2
         with:
-          name: FireHACK-${{ github.sha }}
-          path: |
-            build/libs/*.jar
-            .baritone/fabric/build/libs/*.jar
-            .baritone/dist/*.jar
-          if-no-files-found: error
-          retention-days: 14
+          tag_name: firehack-${{ github.run_number }}-${{ github.sha }}
+          name: FireHACK build ${{ github.run_number }}
+          prerelease: true
+          generate_release_notes: false
+          files: release-assets/*.jar
+
 
       - name: Webhook Failure
         if: ${{ failure() }}

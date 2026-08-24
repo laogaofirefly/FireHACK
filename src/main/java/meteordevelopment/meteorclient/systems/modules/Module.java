@@ -14,6 +14,7 @@ import meteordevelopment.meteorclient.settings.Settings;
 import meteordevelopment.meteorclient.systems.config.Config;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.utils.misc.ISerializable;
+import meteordevelopment.meteorclient.utils.misc.ChineseLocalization;
 import meteordevelopment.meteorclient.utils.misc.Keybind;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
@@ -56,7 +57,7 @@ public abstract class Module implements ISerializable<Module>, Comparable<Module
         this.mc = MinecraftClient.getInstance();
         this.category = category;
         this.name = name;
-        this.title = Utils.nameToTitle(name);
+        this.title = ChineseLocalization.moduleTitle(Utils.nameToTitle(name));
         this.description = description;
         this.aliases = aliases;
         this.color = Color.fromHsv(Utils.random(0.0, 360.0), 0.35, 1);

@@ -7,7 +7,8 @@ concurrency:
 on:
   push:
     branches:
-      - "1.21.11"
+      - "main"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,13 +22,20 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
-
+      - name: Build Baritone from source
+        uses: actions/checkout@v4
+        with:
+          repository: MeteorDevelopment/baritone
+          ref: 1.21.10
+          path: .baritone
+      - name: Publish Baritone to local Maven repository
+        working-directory: .baritone
+        run: ./gradlew :fabric:publishToMavenLocal --no-daemon
       - name: Set up Node JS
         uses: actions/setup-node@v4
         with:

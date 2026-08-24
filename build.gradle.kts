@@ -12,6 +12,10 @@ base {
 }
 
 repositories {
+    // GitHub Actions publishes the Baritone build from source to mavenLocal before
+    // compiling FireHACK. Keeping this first makes the CI-built artifact win over
+    // the remote snapshot with the same coordinates.
+    mavenLocal()
     maven {
         name = "meteor-maven"
         url = uri("https://maven.meteordev.org/releases")
@@ -82,7 +86,9 @@ dependencies {
     modCompileOnly(libs.viafabricplus) { isTransitive = false }
     modCompileOnly(libs.viafabricplus.api) { isTransitive = false }
 
-    modCompileOnly(libs.baritone)
+    // Bundle Baritone into FireHACK instead of requiring it as an external mod.
+    // modInclude is inherited by modImplementation/include below and is packaged by Loom.
+    modInclude(libs.baritone)
     modCompileOnly(libs.modmenu)
 
     // Libraries (JAR-in-JAR)

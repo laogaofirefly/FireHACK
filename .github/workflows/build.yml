@@ -53,6 +53,18 @@ jobs:
       - name: Build
         run: ./gradlew build -Pcommit=${{ github.sha }} -Pbuild_number=${{ steps.build-number.outputs.number }}
 
+      - name: Upload compiled JAR files
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: FireHACK-${{ github.sha }}
+          path: |
+            build/libs/*.jar
+            .baritone/fabric/build/libs/*.jar
+            .baritone/dist/*.jar
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Webhook Failure
         if: ${{ failure() }}
         run: |

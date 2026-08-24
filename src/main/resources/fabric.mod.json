@@ -24,6 +24,9 @@
     ],
     "modmenu": [
       "meteordevelopment.meteorclient.modintegration.ModMenuIntegration"
+    ],
+    "meteor": [
+      "com.yalu.addon.TranslateAddon"
     ]
   },
   "mixins": [
@@ -32,7 +35,8 @@
     "meteor-client-indigo.mixins.json",
     "meteor-client-sodium.mixins.json",
     "meteor-client-lithium.mixins.json",
-    "meteor-client-viafabricplus.mixins.json"
+    "meteor-client-viafabricplus.mixins.json",
+    "addon-Translate.mixins.json"
   ],
   "accessWidener": "meteor-client.accesswidener",
   "custom": {
@@ -50,7 +54,9 @@
   },
   "depends": {
     "java": ">=21",
-    "minecraft": ["${minecraft_version}"],
+    "minecraft": [
+      "${minecraft_version}"
+    ],
     "fabricloader": ">=${loader_version}"
   },
   "breaks": {

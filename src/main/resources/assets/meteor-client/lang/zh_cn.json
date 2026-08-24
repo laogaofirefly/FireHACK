@@ -1,4 +1,5 @@
 {
-  "key.meteor-client.open-gui": "打开GUI",
-  "key.meteor-client.open-commands": "输入命令"
+  "key.meteor-client.open-gui": "打开界面",
+  "key.meteor-client.open-commands": "打开命令输入框",
+  "key.category.meteor-client.meteor-client": "Meteor Client"
 }

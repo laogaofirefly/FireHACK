@@ -28,17 +28,20 @@ public class Translator {
         String value = this.currentLangStrings.get(key);
         if(value != null){
             return value;
-        }else{
+        } else {
+            // Keep the original Meteor text when no translation is available.
+            // The fallback is also recorded for debugging without affecting startup.
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            langJson.addProperty(key,name);
+            langJson.addProperty(key, fallback);
             Path path = Paths.get("lang.json");
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
                 gson.toJson(langJson, writer);
             } catch (IOException e) {
+                // Translation logging must never break module or setting creation.
                 e.printStackTrace();
             }
         }
-        return name;
+        return fallback;
     }
 
 

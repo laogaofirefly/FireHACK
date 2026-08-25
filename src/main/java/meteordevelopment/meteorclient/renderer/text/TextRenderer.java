@@ -11,7 +11,8 @@ import meteordevelopment.meteorclient.utils.render.color.Color;
 
 public interface TextRenderer {
     static TextRenderer get() {
-        return Config.get().customFont.get() ? Fonts.RENDERER : VanillaTextRenderer.INSTANCE;
+        // FireHACK always uses the bundled HarmonyOS Sans SC renderer.
+        return Fonts.RENDERER;
     }
 
     void setAlpha(double a);

@@ -56,10 +56,13 @@ public class Fonts {
         DEFAULT_FONT = getFamily(DEFAULT_FONT_FAMILY).get(FontInfo.Type.Regular);
 
         Config config = Config.get();
-        load(config != null ? config.font.get() : DEFAULT_FONT);
+        // Always use the bundled HarmonyOS Sans SC. User-configured fonts are ignored.
+        load(DEFAULT_FONT);
     }
 
     public static void load(FontFace fontFace) {
+        // Reject all font changes except the bundled HarmonyOS Sans SC.
+        fontFace = DEFAULT_FONT;
         if (RENDERER != null) {
             if (RENDERER.fontFace.equals(fontFace)) return;
             else RENDERER.destroy();

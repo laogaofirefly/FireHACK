@@ -45,7 +45,10 @@ public class FontFaceSetting extends Setting<FontFace> {
 
     @Override
     protected boolean isValueValid(FontFace value) {
-        if (value == null) return false;
+        if (value == null || Fonts.DEFAULT_FONT == null) return false;
+        // Only the bundled HarmonyOS Sans SC face is valid.
+        if (!value.info.family().equals(Fonts.DEFAULT_FONT.info.family())
+            || value.info.type() != Fonts.DEFAULT_FONT.info.type()) return false;
 
         for (FontFamily fontFamily : Fonts.FONT_FAMILIES) {
             if (fontFamily.hasType(value.info.type())) {

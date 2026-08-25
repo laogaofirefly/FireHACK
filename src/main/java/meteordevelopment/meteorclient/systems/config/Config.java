@@ -33,9 +33,10 @@ public class Config extends System<Config> {
 
     // Visual
 
+    // Kept for config compatibility; font rendering is always forced to HarmonyOS Sans SC.
     public final Setting<Boolean> customFont = sgVisual.add(new BoolSetting.Builder()
         .name("custom-font")
-        .description("Use a custom font.")
+        .description("始终使用内置 HarmonyOS Sans SC 字体。")
         .defaultValue(true)
         .build()
     );

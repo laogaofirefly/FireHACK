@@ -24,7 +24,9 @@ public class Font {
     private final float scale;
     private final float ascent;
     private final Int2ObjectOpenHashMap<CharData> charMap = new Int2ObjectOpenHashMap<>();
-    private static final int size = 2048;
+    // 4096 is required for the CJK glyph range used by HarmonyOS Sans SC.
+    // The old 2048 atlas could not contain Chinese characters reliably.
+    private static final int size = 4096;
 
     public Font(ByteBuffer buffer, int height) {
         this.height = height;
@@ -41,6 +43,7 @@ public class Font {
             STBTTPackedchar.create(128), // Latin Extended-A
             STBTTPackedchar.create(144), // Greek and Coptic
             STBTTPackedchar.create(256), // Cyrillic
+            STBTTPackedchar.create(3500), // Common Simplified Chinese characters
             STBTTPackedchar.create(1) // infinity symbol
         };
 
@@ -55,7 +58,9 @@ public class Font {
         packRange.put(STBTTPackRange.create().set(height, 256, null, 128, cdata[2], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 880, null, 144, cdata[3], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 1024, null, 256, cdata[4], (byte) 2, (byte) 2));
-        packRange.put(STBTTPackRange.create().set(height, 8734, null, 1, cdata[5], (byte) 2, (byte) 2)); // lol
+        // U+4E00..U+5B9B: common CJK Unified Ideographs.
+        packRange.put(STBTTPackRange.create().set(height, 0x4E00, null, 3500, cdata[5], (byte) 2, (byte) 2));
+        packRange.put(STBTTPackRange.create().set(height, 8734, null, 1, cdata[6], (byte) 2, (byte) 2)); // infinity symbol
         packRange.flip();
 
         // write and finish

@@ -60,7 +60,7 @@ public class Texture extends AbstractTexture {
         long destAddr = image.imageId();
         for (int i = 0; i < pixelCount; i++) {
             int v = buffer.get(i) & 0xFF;
-            MemoryUtil.putInt(destAddr + (long) i * 4, v | (255 << 24)); // RGBA: R=v, G=0, B=0, A=255
+            MemoryUtil.memPutInt(destAddr + (long) i * 4, v | (255 << 24)); // RGBA: R=v, G=0, B=0, A=255
         }
 
         RenderSystem.getDevice().createCommandEncoder().writeToTexture(glTexture, image);

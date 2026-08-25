@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.fabric.loom)
     id("maven-publish")
+    id("io.freefair.lombok") version "8.14"
 }
 
 base {
@@ -32,6 +33,11 @@ repositories {
         name = "ViaVersion"
         url = uri("https://repo.viaversion.com")
     }
+    maven { url = uri("https://maven.seedfinding.com/") }
+    maven { url = uri("https://maven-snapshots.seedfinding.com/") }
+    maven { url = uri("https://maven.duti.dev/releases") }
+    maven { url = uri("https://masa.dy.fi/maven") }
+    maven { url = uri("https://maven.fallenbreath.me/releases") }
     mavenCentral()
 
     exclusiveContent {
@@ -91,6 +97,23 @@ dependencies {
     modInclude(libs.baritone)
     modCompileOnly(libs.modmenu)
 
+    // Meteor Miku integrations. These remain external optional mods, so the main
+    // client does not bundle duplicate Xaero/Litematica classes.
+    modCompileOnly(libs.xaeroplus)
+    modCompileOnly(libs.xaeros.worldmap)
+    modCompileOnly(libs.xaeros.minimap)
+    modCompileOnly(libs.malilib)
+    modCompileOnly(libs.litematica)
+    modCompileOnly(libs.minihud)
+
+    // Miku seed-search libraries are bundled as normal libraries.
+    jij(libs.mc.biome)
+    jij(libs.mc.core)
+    jij(libs.mc.feature)
+    jij(libs.mc.math)
+    jij(libs.mc.noise)
+    jij(libs.mc.seed)
+    jij(libs.mc.terrain)
     // Libraries (JAR-in-JAR)
     jij(libs.orbit)
     jij(libs.starscript)

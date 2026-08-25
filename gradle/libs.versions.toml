@@ -36,6 +36,20 @@ viafabricplus = "4.4.0"
 waybackauthlib = "1.0.1"
 # MinecraftAuth (https://github.com/RaphiMC/MinecraftAuth)
 minecraftauth = "5.0.2"
+# Meteor Miku optional integrations
+xaeroplus = "2.31.5+fabric-1.21.11"
+xaeros-worldmap = "1.40.2_Fabric_1.21.11"
+xaeros-minimap = "25.3.2_Fabric_1.21.11"
+malilib = "1.21.11-0.27.0"
+litematica = "1.21.11-0.25.0"
+minihud = "1.21.11-0.38.0"
+mc-biome = "1.171.1"
+mc-core = "1.210.0"
+mc-feature = "1.171.10"
+mc-math = "1.171.0"
+mc-noise = "1.171.1"
+mc-seed = "1.171.2"
+mc-terrain = "1.171.1"
 
 [libraries]
 # Fabric base
@@ -51,7 +65,19 @@ baritone = { module = "meteordevelopment:baritone", version.ref = "baritone" }
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 viafabricplus = { module = "com.viaversion:viafabricplus", version.ref = "viafabricplus" }
 viafabricplus-api = { module = "com.viaversion:viafabricplus-api", version.ref = "viafabricplus" }
-
+xaeroplus = { module = "maven.modrinth:xaeroplus", version.ref = "xaeroplus" }
+xaeros-worldmap = { module = "maven.modrinth:xaeros-world-map", version.ref = "xaeros-worldmap" }
+xaeros-minimap = { module = "maven.modrinth:xaeros-minimap", version.ref = "xaeros-minimap" }
+malilib = { module = "com.github.sakura-ryoko:malilib", version.ref = "malilib" }
+litematica = { module = "com.github.sakura-ryoko:litematica", version.ref = "litematica" }
+minihud = { module = "com.github.sakura-ryoko:minihud", version.ref = "minihud" }
+mc-biome = { module = "com.seedfinding:mc_biome", version.ref = "mc-biome" }
+mc-core = { module = "com.seedfinding:mc_core", version.ref = "mc-core" }
+mc-feature = { module = "com.seedfinding:mc_feature", version.ref = "mc-feature" }
+mc-math = { module = "com.seedfinding:mc_math", version.ref = "mc-math" }
+mc-noise = { module = "com.seedfinding:mc_noise", version.ref = "mc-noise" }
+mc-seed = { module = "com.seedfinding:mc_seed", version.ref = "mc-seed" }
+mc-terrain = { module = "com.seedfinding:mc_terrain", version.ref = "mc-terrain" }
 # Libraries
 orbit = { module = "meteordevelopment:orbit", version.ref = "orbit" }
 starscript = { module = "org.meteordev:starscript", version.ref = "starscript" }

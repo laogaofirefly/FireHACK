@@ -26,8 +26,9 @@
       "meteordevelopment.meteorclient.modintegration.ModMenuIntegration"
     ],
     "meteor": [
-      "com.yalu.addon.TranslateAddon"
-    ]
+"com.yalu.addon.TranslateAddon",
+        "com.github.mikumiku.addon.ok.MikuMikuAddon"
+      ]
   },
   "mixins": [
     "meteor-client.mixins.json",
@@ -36,7 +37,8 @@
     "meteor-client-sodium.mixins.json",
     "meteor-client-lithium.mixins.json",
     "meteor-client-viafabricplus.mixins.json",
-    "addon-Translate.mixins.json"
+    "addon-Translate.mixins.json",
+    "miku.mixins.json"
   ],
   "accessWidener": "meteor-client.accesswidener",
   "custom": {

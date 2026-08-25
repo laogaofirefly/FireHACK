@@ -24,6 +24,7 @@ public class Translator {
     private volatile Map<String, String> currentLangStrings = Collections.emptyMap();
     private volatile ResourceManager loadedManager;
     private final Map<String, String> lotusTranslations = new HashMap<>();
+    private final Map<String, String> lotusAliases = new HashMap<>();
 
     public String translate(String key, String fallback) {
         if (key == null || fallback == null) return fallback;

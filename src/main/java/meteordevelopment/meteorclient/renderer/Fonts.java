@@ -55,9 +55,15 @@ public class Fonts {
         DEFAULT_FONT_FAMILY = FontUtils.getBuiltinFontInfo(BUILTIN_FONTS[0]).family();
         DEFAULT_FONT = getFamily(DEFAULT_FONT_FAMILY).get(FontInfo.Type.Regular);
 
-        Config config = Config.get();
-        // Always use the bundled HarmonyOS Sans SC. User-configured fonts are ignored.
-        load(DEFAULT_FONT);
+        // Config may not be initialised yet during @PreInit; load the font directly.
+        // Config.get() will be called later when customFont is actually checked.
+        try {
+            RENDERER = new CustomTextRenderer(DEFAULT_FONT);
+            MeteorClient.LOG.info("HarmonyOS Sans SC font loaded successfully ({}x{} atlas).",
+                RENDERER.fontFace.info, "?");
+        } catch (Exception e) {
+            MeteorClient.LOG.error("Failed to load HarmonyOS Sans SC font at PreInit", e);
+        }
     }
 
     public static void load(FontFace fontFace) {

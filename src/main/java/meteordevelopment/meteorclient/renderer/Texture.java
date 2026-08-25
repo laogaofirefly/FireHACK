@@ -24,9 +24,12 @@ import java.nio.IntBuffer;
 
 public class Texture extends AbstractTexture {
     public Texture(int width, int height, TextureFormat format, FilterMode min, FilterMode mag) {
-        glTexture = RenderSystem.getDevice().createTexture("", 15, format, width, height, 1, 1);
-        sampler = RenderSystem.getSamplerCache().get(AddressMode.REPEAT, AddressMode.REPEAT, min, mag, false);
+        this(width, height, format, AddressMode.REPEAT, AddressMode.REPEAT, min, mag);
+    }
 
+    public Texture(int width, int height, TextureFormat format, AddressMode addressU, AddressMode addressV, FilterMode min, FilterMode mag) {
+        glTexture = RenderSystem.getDevice().createTexture("", 15, format, width, height, 1, 1);
+        sampler = RenderSystem.getSamplerCache().get(addressU, addressV, min, mag, false);
         glTextureView = RenderSystem.getDevice().createTextureView(glTexture);
     }
 

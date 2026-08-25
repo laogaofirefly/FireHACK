@@ -49,11 +49,15 @@ public class Font {
 
         // create and initialise packing context
         STBTTPackContext packContext = STBTTPackContext.create();
-        STBTruetype.stbtt_PackBegin(packContext, bitmap, size, size, 0 ,1);
+        if (!STBTruetype.stbtt_PackBegin(packContext, bitmap, size, size, 0, 1)) {
+            throw new IllegalStateException("Unable to create font atlas " + size + "x" + size);
+        }
 
         // create the pack range, populate with the specific packing ranges
         STBTTPackRange.Buffer packRange = STBTTPackRange.create(cdata.length);
-        packRange.put(STBTTPackRange.create().set(height, 32, null, 95, cdata[0], (byte) 2, (byte) 2));
+        // Keep a wider gap between glyphs so linear filtering cannot bleed into
+        // a neighbouring glyph in the atlas.
+        packRange.put(STBTTPackRange.create().set(height, 32, null, 95, cdata[0], (byte) 3, (byte) 3));
         packRange.put(STBTTPackRange.create().set(height, 160, null, 96, cdata[1], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 256, null, 128, cdata[2], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 880, null, 144, cdata[3], (byte) 2, (byte) 2));
@@ -64,11 +68,19 @@ public class Font {
         packRange.flip();
 
         // write and finish
-        STBTruetype.stbtt_PackFontRanges(packContext, buffer, 0, packRange);
+        if (!STBTruetype.stbtt_PackFontRanges(packContext, buffer, 0, packRange)) {
+            STBTruetype.stbtt_PackEnd(packContext);
+            throw new IllegalStateException("Font atlas is too small for HarmonyOS Sans SC glyphs");
+        }
         STBTruetype.stbtt_PackEnd(packContext);
 
         // Create texture object and get font scale
-        texture = new Texture(size, size, TextureFormat.RED8, FilterMode.LINEAR, FilterMode.LINEAR);
+        // Clamp atlas edges: REPEAT lets glyphs sample pixels from the opposite
+        // edge of the atlas, which causes flickering and clipped characters.
+        texture = new Texture(size, size, TextureFormat.RED8,
+            com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE,
+            com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE,
+            FilterMode.LINEAR, FilterMode.LINEAR);
         texture.upload(bitmap);
         scale = STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, height);
 
@@ -106,9 +118,9 @@ public class Font {
 
     public double getWidth(String string, int length) {
         double width = 0;
-
-        for (int i = 0; i < length; i++) {
-            int cp = string.charAt(i);
+        for (int i = 0; i < length;) {
+            int cp = string.codePointAt(i);
+            i += Character.charCount(cp);
             CharData c = charMap.get(cp);
             if (c == null) c = charMap.get(32);
 
@@ -127,9 +139,9 @@ public class Font {
 
         int length = string.length();
         mesh.ensureCapacity(length * 4, length * 6);
-
-        for (int i = 0; i < length; i++) {
-            int cp = string.charAt(i);
+        for (int i = 0; i < length;) {
+            int cp = string.codePointAt(i);
+            i += Character.charCount(cp);
             CharData c = charMap.get(cp);
             if (c == null) c = charMap.get(32);
 

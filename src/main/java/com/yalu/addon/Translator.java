@@ -12,6 +12,7 @@ import net.minecraft.util.Language;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,10 +23,12 @@ public class Translator {
     private final JsonObject langJson = new JsonObject();
     private volatile Map<String, String> currentLangStrings = Collections.emptyMap();
     private volatile ResourceManager loadedManager;
+    private final Map<String, String> lotusTranslations = new HashMap<>();
 
     public String translate(String key, String fallback) {
         if (key == null || fallback == null) return fallback;
         String value = this.currentLangStrings.get(key);
+        if (value == null) value = lotusLookup(key);
         if(value != null){
             return value;
         } else {
@@ -55,6 +58,7 @@ public class Translator {
             currentLangStrings::put);
         //设置不可变的map 也就是说现在这个currentLangStrings就是当前语言的键值对翻译了
         this.currentLangStrings = Collections.unmodifiableMap(currentLangStrings);
+        loadLotusTranslations(manager);
         this.loadedManager = manager;
     }
 
@@ -97,4 +101,49 @@ public class Translator {
                 }
         }
     }
+    /** Loads the supplied Lotus-i18n property dictionaries. */
+    private void loadLotusTranslations(ResourceManager manager) {
+        lotusTranslations.clear();
+        String[] files = {"meteor_cn.properties", "missing.properties", "missing_lotus.properties", "jefff_cn.properties"};
+        for (String file : files) {
+            Identifier id = Identifier.of("yalu", "lang/lotus/" + file);
+            for (Resource resource : manager.getAllResources(id)) {
+                try (InputStream stream = resource.getInputStream();
+                     InputStreamReader reader = new InputStreamReader(stream, java.nio.charset.StandardCharsets.UTF_8)) {
+                    Properties props = new Properties();
+                    props.load(reader);
+                    for (String k : props.stringPropertyNames()) {
+                        String v = props.getProperty(k);
+                        if (v != null && !v.isBlank()) lotusTranslations.put(k, v);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Failed to load Lotus translations: " + file);
+                }
+            }
+        }
+    }
+
+    private String lotusLookup(String key) {
+        String base = key;
+        boolean description = false;
+        if (base.endsWith(".Description")) {
+            description = true;
+            base = base.substring(0, base.length() - ".Description".length());
+        }
+        int dot = base.lastIndexOf('.');
+        if (dot < 0) return null;
+        String name = base.substring(dot + 1);
+        String[] candidates;
+        if (key.startsWith("Setting.Meteor.")) {
+            candidates = description ? new String[]{"baritone_" + name + "_d", "meteor-miku_" + name + "_d"} : new String[]{"baritone_" + name, "meteor-miku_" + name};
+        } else if (key.startsWith("Module.Meteor.")) {
+            candidates = description ? new String[]{"meteor-miku_" + name + "_d"} : new String[]{"meteor-miku_" + name};
+        } else return null;
+        for (String candidate : candidates) {
+            String result = lotusTranslations.get(candidate);
+            if (result != null) return result;
+        }
+        return null;
+    }
+
 }

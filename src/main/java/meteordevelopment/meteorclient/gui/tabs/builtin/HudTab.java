@@ -24,7 +24,7 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 public class HudTab extends Tab {
     public HudTab() {
-        super("HUD");
+        super("HUD 界面");
     }
 
     @Override
@@ -55,24 +55,24 @@ public class HudTab extends Tab {
 
             add(theme.horizontalSeparator()).expandX();
 
-            WButton openEditor = add(theme.button("Edit")).expandX().widget();
+            WButton openEditor = add(theme.button("编辑")).expandX().widget();
             openEditor.action = () -> mc.setScreen(new HudEditorScreen(theme));
 
             WHorizontalList buttons = add(theme.horizontalList()).expandX().widget();
-            buttons.add(theme.confirmedButton("Clear", "Confirm")).expandX().widget().action = hud::clear;
-            buttons.add(theme.confirmedButton("Reset to default elements", "Confirm")).expandX().widget().action = hud::resetToDefaultElements;
+            buttons.add(theme.confirmedButton("清空", "确认")).expandX().widget().action = hud::clear;
+            buttons.add(theme.confirmedButton("恢复默认元素", "确认")).expandX().widget().action = hud::resetToDefaultElements;
 
             add(theme.horizontalSeparator()).expandX();
 
             WHorizontalList bottom = add(theme.horizontalList()).expandX().widget();
 
-            bottom.add(theme.label("Active: "));
+            bottom.add(theme.label("启用："));
             WCheckbox active = bottom.add(theme.checkbox(hud.active)).expandCellX().widget();
             active.action = () -> hud.active = active.checked;
 
             WButton resetSettings = bottom.add(theme.button(GuiRenderer.RESET)).widget();
             resetSettings.action = hud.settings::reset;
-            resetSettings.tooltip = "Reset";
+            resetSettings.tooltip = "重置";
         }
 
         @Override

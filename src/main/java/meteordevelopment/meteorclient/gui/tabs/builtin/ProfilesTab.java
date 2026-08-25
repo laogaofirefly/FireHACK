@@ -59,7 +59,7 @@ public class ProfilesTab extends Tab {
     }
 
     public ProfilesTab() {
-        super("Profiles");
+        super("配置档案");
     }
 
     @Override
@@ -87,13 +87,13 @@ public class ProfilesTab extends Tab {
             WHorizontalList l = add(theme.horizontalList()).expandX().widget();
 
             // Create
-            WButton create = l.add(theme.button("Create")).expandX().widget();
-            create.tooltip = "Create new profile";
+            WButton create = l.add(theme.button("创建")).expandX().widget();
+            create.tooltip = "创建新的配置档案";
             create.action = () -> mc.setScreen(new EditProfileScreen(theme, null, this::reload));
 
             // Import
-            WButton importBtn = l.add(theme.button("Import")).expandX().widget();
-            importBtn.tooltip = "Import profile";
+            WButton importBtn = l.add(theme.button("导入")).expandX().widget();
+            importBtn.tooltip = "导入配置档案";
             importBtn.action = () -> {
                 try {
                     Profile imported = importProfile();
@@ -118,14 +118,14 @@ public class ProfilesTab extends Tab {
             for (Profile profile : Profiles.get()) {
                 table.add(theme.label(profile.name.get())).expandCellX();
 
-                WConfirmedButton save = theme.confirmedButton("Save", "Confirm");
+                WConfirmedButton save = theme.confirmedButton("保存", "确认");
                 save.action = profile::save;
                 table.add(save).right();
 
-                WButton load = table.add(theme.button("Load")).widget();
+                WButton load = table.add(theme.button("加载")).widget();
                 load.action = profile::load;
 
-                WButton export = table.add(theme.button("Export")).widget();
+                WButton export = table.add(theme.button("导出")).widget();
                 export.action = () -> mc.setScreen(new ExportProfileScreen(theme, profile));
 
                 WButton edit = table.add(theme.button(GuiRenderer.EDIT)).widget();
@@ -200,7 +200,7 @@ public class ProfilesTab extends Tab {
         private final Runnable action;
 
         public EditProfileScreen(GuiTheme theme, Profile profile, Runnable action) {
-            super(theme, profile == null ? "New Profile" : "Edit Profile");
+            super(theme, profile == null ? "新建配置档案" : "编辑配置档案");
 
             this.isNew = profile == null;
             this.profile = isNew ? new Profile() : profile;
@@ -257,13 +257,13 @@ public class ProfilesTab extends Tab {
         private final Profile profile;
 
         public ExportProfileScreen(GuiTheme theme, Profile profile) {
-            super(theme, "Export Profile");
+            super(theme, "导出配置档案");
             this.profile = profile;
         }
 
         @Override
         public void initWidgets() {
-            add(theme.label("Select which profile settings to export."));
+            add(theme.label("选择要导出的配置档案内容。"));
 
             WContainer settingsContainer = add(theme.verticalList()).expandX().minWidth(400).widget();
 
@@ -276,7 +276,7 @@ public class ProfilesTab extends Tab {
 
             add(theme.horizontalSeparator()).expandX().widget();
 
-            WButton export = add(theme.button("Export profile")).expandX().widget();
+            WButton export = add(theme.button("导出配置档案")).expandX().widget();
             export.action = () -> {
                 exportProfile(profile, hud.checked, macros.checked, modules.checked, waypoints.checked);
                 close();

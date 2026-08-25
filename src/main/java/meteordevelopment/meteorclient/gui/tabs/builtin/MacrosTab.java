@@ -24,7 +24,7 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 
 public class MacrosTab extends Tab {
     public MacrosTab() {
-        super("Macros");
+        super("宏");
     }
 
     @Override
@@ -49,7 +49,7 @@ public class MacrosTab extends Tab {
 
             add(theme.horizontalSeparator()).expandX();
 
-            WButton create = add(theme.button("Create")).expandX().widget();
+            WButton create = add(theme.button("创建")).expandX().widget();
             create.action = () -> mc.setScreen(new EditMacroScreen(theme, null, this::reload));
         }
 

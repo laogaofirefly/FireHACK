@@ -13,7 +13,7 @@ public abstract class EditSystemScreen<T> extends WindowScreen {
     private final Runnable reload;
 
     public EditSystemScreen(GuiTheme theme, T value, Runnable reload) {
-        super(theme, value == null ? "New" : "Edit");
+        super(theme, value == null ? "新建" : "编辑");
 
         this.isNew = value == null;
         this.value = isNew ? create() : value;
@@ -27,7 +27,7 @@ public abstract class EditSystemScreen<T> extends WindowScreen {
 
         add(theme.horizontalSeparator()).expandX();
 
-        WButton done = add(theme.button(isNew ? "Create" : "Save")).expandX().widget();
+        WButton done = add(theme.button(isNew ? "创建" : "保存")).expandX().widget();
         done.action = () -> {
             if (save()) close();
         };

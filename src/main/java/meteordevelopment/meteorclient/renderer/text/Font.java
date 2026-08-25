@@ -43,7 +43,7 @@ public class Font {
             STBTTPackedchar.create(128), // Latin Extended-A
             STBTTPackedchar.create(144), // Greek and Coptic
             STBTTPackedchar.create(256), // Cyrillic
-            STBTTPackedchar.create(3500), // Common Simplified Chinese characters
+            STBTTPackedchar.create(1500), // Common Simplified Chinese characters (top 1500 covers ~95% of daily text)
             STBTTPackedchar.create(1) // infinity symbol
         };
 
@@ -63,7 +63,7 @@ public class Font {
         packRange.put(STBTTPackRange.create().set(height, 880, null, 144, cdata[3], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 1024, null, 256, cdata[4], (byte) 2, (byte) 2));
         // U+4E00..U+5B9B: common CJK Unified Ideographs.
-        packRange.put(STBTTPackRange.create().set(height, 0x4E00, null, 3500, cdata[5], (byte) 2, (byte) 2));
+        packRange.put(STBTTPackRange.create().set(height, 0x4E00, null, 1500, cdata[5], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 8734, null, 1, cdata[6], (byte) 2, (byte) 2)); // infinity symbol
         packRange.flip();
 

@@ -34,7 +34,7 @@ public class CustomTextRenderer implements TextRenderer {
 
         ByteBuffer buffer = fontFace.readToDirectByteBuffer();
 
-        fonts = new Font[5];
+        fonts = new Font[3];
         for (int i = 0; i < fonts.length; i++) {
             fonts[i] = new Font(buffer, (int) Math.round(27 * ((i * 0.5) + 1)));
         }
@@ -58,9 +58,7 @@ public class CustomTextRenderer implements TextRenderer {
             double scaleA = Math.floor(scale * 10) / 10;
 
             int scaleI;
-            if (scaleA >= 3) scaleI = 5;
-            else if (scaleA >= 2.5) scaleI = 4;
-            else if (scaleA >= 2) scaleI = 3;
+            if (scaleA >= 2.5) scaleI = 3;
             else if (scaleA >= 1.5) scaleI = 2;
             else scaleI = 1;
 

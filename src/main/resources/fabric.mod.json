@@ -26,9 +26,9 @@
       "meteordevelopment.meteorclient.modintegration.ModMenuIntegration"
     ],
     "meteor": [
-"com.yalu.addon.TranslateAddon",
-        "com.github.mikumiku.addon.ok.MikuMikuAddon"
-      ]
+      "com.yalu.addon.TranslateAddon",
+      "com.github.mikumiku.addon.ok.MikuMikuAddon"
+    ]
   },
   "mixins": [
     "meteor-client.mixins.json",

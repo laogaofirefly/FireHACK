@@ -47,11 +47,8 @@ public class MikuApp {
         modules.add(new TreeAura());
         modules.add(new SeedMine());
         modules.add(new OnekeyFireWork());
-        modules.add(new StructureFinder());
-        modules.add(new ElytraFinder());
         modules.add(new ShulkerBoxItemFetcher());
         modules.add(new VillagerRoller());
-        modules.add(new LitematicaMover());
         modules.add(new AutoWalk());
         modules.add(new HandsomeSpin());
         modules.add(new AutoCrystalBlock());
@@ -102,14 +99,12 @@ public class MikuApp {
         modules.add(new AutoSpray());
 
 //        modules.add(new HeadlessModule(CATEGORY_MIKU_PRO, "投影打印机", "内测中"));
-        modules.add(new BestPrinter());
         modules.add(new AutoElytraHarvester());
         modules.add(new BaritoneHelperModule());
 
         // 地图画 Modules
 //        Modules.get().add(new CarpetPrinter());
 //        Modules.get().add(new FullBlockPrinter());
-        Modules.get().add(new MapNamer());
 
         Modules.get().add(new Surround());
         Modules.get().add(new SurroundPlus());

@@ -28,8 +28,10 @@ public class Translator {
 
     public String translate(String key, String fallback) {
         if (key == null || fallback == null) return fallback;
-        String value = this.currentLangStrings.get(key);
-        if (value == null) value = lotusLookup(key);
+        // Prefer the supplied Lotus Chinese dictionaries over placeholder values
+        // from the generated/partial JSON dictionary.
+        String value = lotusLookup(key);
+        if (value == null) value = this.currentLangStrings.get(key);
         if(value != null){
             return value;
         } else {
@@ -84,7 +86,9 @@ public class Translator {
         for(String langCode : langCodes)
         {
             //设置路径
-            String langFilePath = "lang/" + langCode + ".json";
+            // getCurrentLangCodes may already return a filename (e.g. en_us.json).
+            // Do not append .json twice, otherwise every JSON dictionary is skipped.
+            String langFilePath = "lang/" + (langCode.endsWith(".json") ? langCode : langCode + ".json");
 
             //注册语言ID
             Identifier langId = Identifier.of("yalu", langFilePath);
@@ -134,17 +138,32 @@ public class Translator {
         int dot = base.lastIndexOf('.');
         if (dot < 0) return null;
         String name = base.substring(dot + 1);
-        String[] candidates;
-        if (key.startsWith("Setting.Meteor.")) {
-            candidates = description ? new String[]{"baritone_" + name + "_d", "meteor-miku_" + name + "_d"} : new String[]{"baritone_" + name, "meteor-miku_" + name};
-        } else if (key.startsWith("Module.Meteor.")) {
-            candidates = description ? new String[]{"meteor-miku_" + name + "_d"} : new String[]{"meteor-miku_" + name};
-        } else return null;
-        for (String candidate : candidates) {
-            String result = lotusTranslations.get(candidate);
-            if (result != null) return result;
+        String normalizedName = normalize(name);
+
+        // Lotus uses names such as allowBreak while Meteor settings commonly
+        // use allow-break. Match both forms instead of requiring exact keys.
+        for (Map.Entry<String, String> entry : lotusTranslations.entrySet()) {
+            String propertyKey = entry.getKey();
+            boolean module = propertyKey.startsWith("meteor-miku_");
+            boolean baritone = propertyKey.startsWith("baritone_");
+            if (!module && !baritone) continue;
+            boolean propertyDescription = propertyKey.endsWith("_d");
+            if (propertyDescription != description) continue;
+            if (key.startsWith("Setting.Meteor.") && !baritone && !module) continue;
+            if (key.startsWith("Module.Meteor.") && !module) continue;
+            String candidate = propertyKey.substring(propertyKey.indexOf('_') + 1);
+            if (propertyDescription) candidate = candidate.substring(0, candidate.length() - 2);
+            // Miku keys can contain module names before the actual setting name.
+            if (normalize(candidate).equals(normalizedName)
+                || normalize(candidate).endsWith(normalizedName)) {
+                return entry.getValue();
+            }
         }
         return null;
+    }
+
+    private static String normalize(String value) {
+        return value.replaceAll("[^A-Za-z0-9\\u4e00-\\u9fff]", "").toLowerCase(Locale.ROOT);
     }
 
 }

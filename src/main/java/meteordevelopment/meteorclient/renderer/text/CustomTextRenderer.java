@@ -1,8 +1,3 @@
-/*
- * This file is part of the Meteor Client distribution (https://github.com/MeteorDevelopment/meteor-client).
- * Copyright (c) Meteor Development.
- */
-
 package meteordevelopment.meteorclient.renderer.text;
 
 import meteordevelopment.meteorclient.renderer.MeshBuilder;
@@ -21,8 +16,9 @@ public class CustomTextRenderer implements TextRenderer {
 
     public final FontFace fontFace;
 
-    private final Font[] fonts;
-    private Font font;
+    /** Single font instance — no multi-atlas switching, no flickering. */
+    private final Font font;
+    private Font currentFont;
 
     private boolean building;
     private boolean scaleOnly;
@@ -34,10 +30,9 @@ public class CustomTextRenderer implements TextRenderer {
 
         ByteBuffer buffer = fontFace.readToDirectByteBuffer();
 
-        fonts = new Font[3];
-        for (int i = 0; i < fonts.length; i++) {
-            fonts[i] = new Font(buffer, (int) Math.round(27 * ((i * 0.5) + 1)));
-        }
+        // Single font size at 27px. All scaling is done by the renderer,
+        // avoiding atlas switches that cause flickering.
+        font = new Font(buffer, 27);
     }
 
     @Override
@@ -51,39 +46,28 @@ public class CustomTextRenderer implements TextRenderer {
 
         if (!scaleOnly) mesh.begin();
 
-        if (big) {
-            this.font = fonts[fonts.length - 1];
-        }
-        else {
-            double scaleA = Math.floor(scale * 10) / 10;
-
-            int scaleI;
-            if (scaleA >= 2.5) scaleI = 3;
-            else if (scaleA >= 1.5) scaleI = 2;
-            else scaleI = 1;
-
-            font = fonts[scaleI - 1];
-        }
+        // Always use the same single font — no atlas switching.
+        currentFont = font;
 
         this.building = true;
         this.scaleOnly = scaleOnly;
 
-        this.fontScale = font.getHeight() / 27.0;
-        this.scale = 1 + (scale - fontScale) / fontScale;
+        this.fontScale = 1.0;
+        this.scale = scale;
     }
 
     @Override
     public double getWidth(String text, int length, boolean shadow) {
         if (text.isEmpty()) return 0;
 
-        Font font = building ? this.font : fonts[0];
-        return (font.getWidth(text, length) + (shadow ? 1 : 0)) * scale / 1.5;
+        Font f = building ? currentFont : font;
+        return (f.getWidth(text, length) + (shadow ? 1 : 0)) * scale / 1.5;
     }
 
     @Override
     public double getHeight(boolean shadow) {
-        Font font = building ? this.font : fonts[0];
-        return (font.getHeight() + 1 + (shadow ? 1 : 0)) * scale / 1.5;
+        Font f = building ? currentFont : font;
+        return (f.getHeight() + 1 + (shadow ? 1 : 0)) * scale / 1.5;
     }
 
     @Override
@@ -96,13 +80,13 @@ public class CustomTextRenderer implements TextRenderer {
             int preShadowA = SHADOW_COLOR.a;
             SHADOW_COLOR.a = (int) (color.a / 255.0 * preShadowA);
 
-            width = font.render(mesh, text, x + fontScale * scale / 1.5, y + fontScale * scale / 1.5, SHADOW_COLOR, scale / 1.5);
-            font.render(mesh, text, x, y, color, scale / 1.5);
+            width = currentFont.render(mesh, text, x + fontScale * scale / 1.5, y + fontScale * scale / 1.5, SHADOW_COLOR, scale / 1.5);
+            currentFont.render(mesh, text, x, y, color, scale / 1.5);
 
             SHADOW_COLOR.a = preShadowA;
         }
         else {
-            width = font.render(mesh, text, x, y, color, scale / 1.5);
+            width = currentFont.render(mesh, text, x, y, color, scale / 1.5);
         }
 
         if (!wasBuilding) end();
@@ -125,7 +109,7 @@ public class CustomTextRenderer implements TextRenderer {
                 .attachments(MinecraftClient.getInstance().getFramebuffer())
                 .pipeline(MeteorRenderPipelines.UI_TEXT)
                 .mesh(mesh)
-                .sampler("u_Texture", font.texture.getGlTextureView(), font.texture.getSampler())
+                .sampler("u_Texture", currentFont.texture.getGlTextureView(), currentFont.texture.getSampler())
                 .end();
         }
 
@@ -134,8 +118,6 @@ public class CustomTextRenderer implements TextRenderer {
     }
 
     public void destroy() {
-        for (Font font : this.fonts) {
-            font.texture.close();
-        }
+        font.texture.close();
     }
 }

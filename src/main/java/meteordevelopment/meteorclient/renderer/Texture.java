@@ -46,10 +46,22 @@ public class Texture extends AbstractTexture {
     }
 
     public void upload(ByteBuffer buffer) {
-        var image = getImage();
+        int w = getWidth();
+        int h = getHeight();
+        int pixelCount = w * h;
 
-        buffer.rewind();
-        MemoryUtil.memCopy(MemoryUtil.memAddress(buffer), image.imageId(), buffer.remaining());
+        // NativeImage stores data as int[] (4 bytes per pixel) regardless of format.
+        // The font bitmap from stbtt is 1 byte per pixel (RED8/LUMINANCE).
+        // The old memCopy(src, image.imageId(), buffer.remaining()) only copied 25%
+        // of the pixel data (16 MB byte buffer into 67 MB int[] backing array),
+        // leaving 75% of glyphs uninitialised → random missing/corrupt characters.
+        // Fix: expand each byte to a full RGBA int so all pixels are uploaded.
+        var image = getImage();
+        long destAddr = image.imageId();
+        for (int i = 0; i < pixelCount; i++) {
+            int v = buffer.get(i) & 0xFF;
+            MemoryUtil.putInt(destAddr + (long) i * 4, v | (255 << 24)); // RGBA: R=v, G=0, B=0, A=255
+        }
 
         RenderSystem.getDevice().createCommandEncoder().writeToTexture(glTexture, image);
 

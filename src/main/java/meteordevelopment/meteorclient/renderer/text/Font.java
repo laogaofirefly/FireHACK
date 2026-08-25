@@ -37,15 +37,21 @@ public class Font {
 
         // Allocate buffers
         ByteBuffer bitmap = BufferUtils.createByteBuffer(size * size);
+        int cjkCount = CjkCodepoints.CODEPOINTS.length;
         STBTTPackedchar.Buffer[] cdata = {
             STBTTPackedchar.create(95), // Basic Latin
             STBTTPackedchar.create(96), // Latin 1 Supplement
             STBTTPackedchar.create(128), // Latin Extended-A
             STBTTPackedchar.create(144), // Greek and Coptic
             STBTTPackedchar.create(256), // Cyrillic
-            STBTTPackedchar.create(1500), // Common Simplified Chinese characters (top 1500 covers ~95% of daily text)
+            STBTTPackedchar.create(cjkCount), // CJK — exact codepoints from translation resources
             STBTTPackedchar.create(1) // infinity symbol
         };
+
+        // Prepare the CJK codepoint array as a direct IntBuffer
+        IntBuffer cjkCodepoints = BufferUtils.createIntBuffer(cjkCount);
+        cjkCodepoints.put(CjkCodepoints.CODEPOINTS);
+        cjkCodepoints.flip();
 
         // create and initialise packing context
         STBTTPackContext packContext = STBTTPackContext.create();
@@ -53,7 +59,8 @@ public class Font {
             throw new IllegalStateException("Unable to create font atlas " + size + "x" + size);
         }
 
-        // create the pack range, populate with the specific packing ranges
+        // create the pack range, populate with the specific packing ranges.
+        // Use exact codepoint array for CJK (sparse) instead of a continuous range.
         STBTTPackRange.Buffer packRange = STBTTPackRange.create(cdata.length);
         // Keep a wider gap between glyphs so linear filtering cannot bleed into
         // a neighbouring glyph in the atlas.
@@ -62,8 +69,8 @@ public class Font {
         packRange.put(STBTTPackRange.create().set(height, 256, null, 128, cdata[2], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 880, null, 144, cdata[3], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 1024, null, 256, cdata[4], (byte) 2, (byte) 2));
-        // U+4E00..U+5B9B: common CJK Unified Ideographs.
-        packRange.put(STBTTPackRange.create().set(height, 0x4E00, null, 1500, cdata[5], (byte) 2, (byte) 2));
+        // CJK: pass exact codepoint array so stbtt packs only the needed glyphs
+        packRange.put(STBTTPackRange.create().set(height, 0, cjkCodepoints, cjkCount, cdata[5], (byte) 2, (byte) 2));
         packRange.put(STBTTPackRange.create().set(height, 8734, null, 1, cdata[6], (byte) 2, (byte) 2)); // infinity symbol
         packRange.flip();
 
@@ -93,15 +100,22 @@ public class Font {
 
         for (int i = 0; i < cdata.length; i++) {
             STBTTPackedchar.Buffer cbuf = cdata[i];
-            int offset = packRange.get(i).first_unicode_codepoint_in_range();
+            STBTTPackRange range = packRange.get(i);
+            IntBuffer codepointArray = range.array_of_unicode_codepoints();
+            int offset = range.first_unicode_codepoint_in_range();
 
             for (int j = 0; j < cbuf.capacity(); j++) {
                 STBTTPackedchar packedChar = cbuf.get(j);
 
+                // Ranges with an explicit codepoint array (CJK) map index -> codepoint
+                // through that array; continuous ranges use offset + index.
+                int cp = (codepointArray != null) ? codepointArray.get(j) : j + offset;
+                if (cp <= 0) continue;
+
                 float ipw = 1f / size; // pixel width and height
                 float iph = 1f / size;
 
-                charMap.put(j + offset, new CharData(
+                charMap.put(cp, new CharData(
                     packedChar.xoff(),
                     packedChar.yoff(),
                     packedChar.xoff2(),

@@ -22,8 +22,11 @@ public abstract class ModuleMixin {
         if (MC == null || name == null) return;
         try {
             TRANSLATOR.reload(MC.getResourceManager());
-            title = TRANSLATOR.translate("Module.Meteor." + name, name);
-            description = TRANSLATOR.translate("Module.Meteor." + name + ".Description", description);
+            // Only apply real Chinese translations.
+            String t = TRANSLATOR.translateIfChinese("Module.Meteor." + name);
+            if (t != null) title = t;
+            String d = TRANSLATOR.translateIfChinese("Module.Meteor." + name + ".Description");
+            if (d != null) description = d;
         } catch (Throwable ignored) {
             // Keep the original Meteor text if a future Meteor build changes its internals.
         }

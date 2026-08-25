@@ -31,8 +31,12 @@ public class SettingMixin {
         if (MC == null) return;
         try {
             TRANSLATOR.reload(MC.getResourceManager());
-            this.title = TRANSLATOR.translate("Setting.Meteor." + this.name, this.name);
-            this.description = TRANSLATOR.translate("Setting.Meteor." + this.name + ".Description", this.description);
+            // Only apply real Chinese translations — English placeholder values
+            // (e.g. "scale") must NOT destroy the auto-generated title (e.g. "Scale").
+            String t = TRANSLATOR.translateIfChinese("Setting.Meteor." + this.name);
+            if (t != null) this.title = t;
+            String d = TRANSLATOR.translateIfChinese("Setting.Meteor." + this.name + ".Description");
+            if (d != null) this.description = d;
         } catch (Throwable ignored) {
             // Preserve vanilla/Meteor values if a setting implementation changes.
         }

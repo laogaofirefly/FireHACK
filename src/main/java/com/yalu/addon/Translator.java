@@ -24,89 +24,123 @@ public class Translator {
     private volatile Map<String, String> currentLangStrings = Collections.emptyMap();
     private volatile ResourceManager loadedManager;
     private final Map<String, String> lotusTranslations = new HashMap<>();
-    private final Map<String, String> lotusAliases = new HashMap<>();
+    private boolean classpathLoaded = false;
 
-    public String translate(String key, String fallback) {
-        if (key == null || fallback == null) return fallback;
-        // Prefer the supplied Lotus Chinese dictionaries over placeholder values
-        // from the generated/partial JSON dictionary.
-        String value = lotusLookup(key);
-        if (value == null) value = this.currentLangStrings.get(key);
-        if(value != null){
-            return value;
-        } else {
-            // Keep the original Meteor text when no translation is available.
-            // The fallback is also recorded for debugging without affecting startup.
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            langJson.addProperty(key, fallback);
-            Path path = Paths.get("lang.json");
-            try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-                gson.toJson(langJson, writer);
-            } catch (IOException e) {
-                // Translation logging must never break module or setting creation.
-                e.printStackTrace();
-            }
-        }
-        return fallback;
+    public Translator() {
+        loadClasspathDictionaries();
     }
 
+    /** Returns the translated value, or null if neither Lotus nor JSON has it. */
+    public String translate(String key, String fallback) {
+        if (key == null || fallback == null) return fallback;
+        if (lotusTranslations.isEmpty()) loadClasspathDictionaries();
+        String value = lotusLookup(key);
+        if (value == null) value = this.currentLangStrings.get(key);
+        if (value != null) return value;
+        // Log missing key (harmless)
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        langJson.addProperty(key, fallback);
+        Path p = Paths.get("lang.json");
+        try (BufferedWriter writer = Files.newBufferedWriter(p)) {
+            gson.toJson(langJson, writer);
+        } catch (IOException e) { /* ignore */ }
+        return null;
+    }
 
-    public synchronized void reload(ResourceManager manager)
-    {
-        if (manager == null || manager == loadedManager) return;
-        HashMap<String, String> currentLangStrings = new HashMap<>();
-        //从mixin获取管理器然后获取当前语言的语言代码，然后加载翻译文件
-//		//这个方法会将语言文件内的键值对赋值给currentLangStrings（这是个HASHMAP（键值对））
-        loadTranslations(manager, getCurrentLangCodes(),
-            currentLangStrings::put);
-        //设置不可变的map 也就是说现在这个currentLangStrings就是当前语言的键值对翻译了
-        this.currentLangStrings = Collections.unmodifiableMap(currentLangStrings);
+    /** Returns a translated value only when a real Chinese translation is present.
+     *  English placeholder values (e.g. "scale" instead of "缩放") are ignored. */
+    public String translateIfChinese(String key) {
+        if (key == null) return null;
+        if (lotusTranslations.isEmpty()) loadClasspathDictionaries();
+        String value = lotusLookup(key);
+        if (value == null) value = this.currentLangStrings.get(key);
+        if (value != null && containsChinese(value)) return value;
+        return null;
+    }
+
+    private static boolean containsChinese(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isIdeographic(c) ||
+                (c >= 0x3000 && c <= 0x303F) ||
+                (c >= 0xFE30 && c <= 0xFE4F))
+                return true;
+        }
+        return false;
+    }
+
+    private void loadClasspathDictionaries() {
+        if (classpathLoaded) return;
+        classpathLoaded = true;
+        if (currentLangStrings.isEmpty() || currentLangStrings == Collections.emptyMap()) {
+            Map<String, String> strings = new HashMap<>();
+            loadJsonResource("/assets/yalu/lang/zh_cn.json", strings);
+            loadJsonResource("/assets/yalu/lang/en_us.json", strings);
+            if (!strings.isEmpty()) {
+                currentLangStrings = Collections.unmodifiableMap(strings);
+            }
+        }
+        if (lotusTranslations.isEmpty()) {
+            String[] files = {"meteor_cn.properties", "missing.properties", "missing_lotus.properties", "jefff_cn.properties"};
+            for (String file : files) {
+                try (InputStream stream = Translator.class.getResourceAsStream("/assets/yalu/lang/lotus/" + file);
+                     InputStreamReader reader = stream != null
+                         ? new InputStreamReader(stream, java.nio.charset.StandardCharsets.UTF_8)
+                         : null) {
+                    if (reader == null) continue;
+                    Properties props = new Properties();
+                    props.load(reader);
+                    for (String k : props.stringPropertyNames()) {
+                        String v = props.getProperty(k);
+                        if (v != null && !v.isBlank()) lotusTranslations.put(k, v);
+                    }
+                } catch (Exception ignored) { }
+            }
+        }
+    }
+
+    private void loadJsonResource(String path, Map<String, String> target) {
+        try (InputStream in = Translator.class.getResourceAsStream(path)) {
+            if (in != null) Language.load(in, target::put);
+        } catch (Exception ignored) { }
+    }
+
+    public synchronized void reload(ResourceManager manager) {
+        if (manager == null) return;
+        HashMap<String, String> strings = new HashMap<>();
+        loadTranslations(manager, getCurrentLangCodes(), strings::put);
+        this.currentLangStrings = Collections.unmodifiableMap(strings);
         loadLotusTranslations(manager);
         this.loadedManager = manager;
     }
 
     private Iterable<String> getCurrentLangCodes() {
-        // Weird bug: Some users have their language set to "en_US" instead of
-        // "en_us.json" for some reason. Last seen in 1.21.
         String mainLangCode = MinecraftClient.getInstance().getLanguageManager()
             .getLanguage().toLowerCase();
-
         ArrayList<String> langCodes = new ArrayList<>();
         langCodes.add("en_us.json");
-        if(!"en_us.json".equals(mainLangCode))
+        if (!"en_us.json".equals(mainLangCode))
             langCodes.add(mainLangCode);
-
         return langCodes;
     }
 
     private void loadTranslations(ResourceManager manager,
-                                  Iterable<String> langCodes, BiConsumer<String, String> entryConsumer)
-    {
-        //遍历所有已经获取的语言代码
-        for(String langCode : langCodes)
-        {
-            //设置路径
-            // getCurrentLangCodes may already return a filename (e.g. en_us.json).
-            // Do not append .json twice, otherwise every JSON dictionary is skipped.
+                                  Iterable<String> langCodes, BiConsumer<String, String> entryConsumer) {
+        for (String langCode : langCodes) {
             String langFilePath = "lang/" + (langCode.endsWith(".json") ? langCode : langCode + ".json");
-
-            //注册语言ID
             Identifier langId = Identifier.of("yalu", langFilePath);
-
-            for(Resource resource : manager.getAllResources(langId))
-                try(InputStream stream = resource.getInputStream())
-                {
+            for (Resource resource : manager.getAllResources(langId)) {
+                try (InputStream stream = resource.getInputStream()) {
                     Language.load(stream, entryConsumer);
-
-                }catch(IOException e)
-                {
+                } catch (IOException e) {
                     System.out.println("Failed to load translations for "
                         + langCode + " from pack " + resource.getPackId());
                     e.printStackTrace();
                 }
+            }
         }
     }
-    /** Loads the supplied Lotus-i18n property dictionaries. */
+
     private void loadLotusTranslations(ResourceManager manager) {
         lotusTranslations.clear();
         String[] files = {"meteor_cn.properties", "missing.properties", "missing_lotus.properties", "jefff_cn.properties"};
@@ -140,8 +174,6 @@ public class Translator {
         String name = base.substring(dot + 1);
         String normalizedName = normalize(name);
 
-        // Lotus uses names such as allowBreak while Meteor settings commonly
-        // use allow-break. Match both forms instead of requiring exact keys.
         for (Map.Entry<String, String> entry : lotusTranslations.entrySet()) {
             String propertyKey = entry.getKey();
             boolean module = propertyKey.startsWith("meteor-miku_");
@@ -153,7 +185,6 @@ public class Translator {
             if (key.startsWith("Module.Meteor.") && !module) continue;
             String candidate = propertyKey.substring(propertyKey.indexOf('_') + 1);
             if (propertyDescription) candidate = candidate.substring(0, candidate.length() - 2);
-            // Miku keys can contain module names before the actual setting name.
             if (normalize(candidate).equals(normalizedName)
                 || normalize(candidate).endsWith(normalizedName)) {
                 return entry.getValue();
@@ -165,5 +196,4 @@ public class Translator {
     private static String normalize(String value) {
         return value.replaceAll("[^A-Za-z0-9\\u4e00-\\u9fff]", "").toLowerCase(Locale.ROOT);
     }
-
 }

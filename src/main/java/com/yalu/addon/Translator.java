@@ -72,7 +72,7 @@ public class Translator {
     private void loadClasspathDictionaries() {
         if (classpathLoaded) return;
         classpathLoaded = true;
-        if (currentLangStrings.isEmpty() || currentLangStrings == Collections.emptyMap()) {
+        if (currentLangStrings.isEmpty()) {
             Map<String, String> strings = new HashMap<>();
             loadJsonResource("/assets/yalu/lang/zh_cn.json", strings);
             loadJsonResource("/assets/yalu/lang/en_us.json", strings);

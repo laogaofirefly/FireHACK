@@ -38,7 +38,7 @@
     "meteor-client-lithium.mixins.json",
     "meteor-client-viafabricplus.mixins.json",
     "addon-Translate.mixins.json",
-    "miku.mixins.json"
+    "firehack-miku.mixins.json"
   ],
   "accessWidener": "meteor-client.accesswidener",
   "custom": {

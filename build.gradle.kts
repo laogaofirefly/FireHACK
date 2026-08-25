@@ -99,12 +99,6 @@ dependencies {
 
     // Meteor Miku integrations. These remain external optional mods, so the main
     // client does not bundle duplicate Xaero/Litematica classes.
-    modCompileOnly(libs.xaeroplus)
-    modCompileOnly(libs.xaeros.worldmap)
-    modCompileOnly(libs.xaeros.minimap)
-    modCompileOnly(libs.malilib)
-    modCompileOnly(libs.litematica)
-    modCompileOnly(libs.minihud)
 
     // Miku seed-search libraries are bundled as normal libraries.
     jij(libs.mc.biome)

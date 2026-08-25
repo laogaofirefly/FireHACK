@@ -6,7 +6,6 @@ import com.github.mikumiku.addon.hud.HudMiku;
 import com.github.mikumiku.addon.hud.PotCountHud;
 import com.github.mikumiku.addon.modules.*;
 import com.github.mikumiku.addon.modules.sorter.ItemSorterModule;
-import com.github.mikumiku.addon.nerv_printer.modules.MapNamer;
 import com.github.mikumiku.addon.util.DebugModule;
 import com.github.mikumiku.addon.util.timer.TickTimerManager;
 import lombok.extern.slf4j.Slf4j;

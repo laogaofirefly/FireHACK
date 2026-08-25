@@ -68,14 +68,14 @@ public class BaritoneSettings implements IPathManager.ISettings {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void createWrappers() {
-        SettingGroup sgBool = settings.createGroup("Checkboxes");
-        SettingGroup sgDouble = settings.createGroup("Numbers");
-        SettingGroup sgInt = settings.createGroup("Whole Numbers");
-        SettingGroup sgString = settings.createGroup("Strings");
-        SettingGroup sgColor = settings.createGroup("Colors");
+        SettingGroup sgBool = settings.createGroup("开关设置");
+        SettingGroup sgDouble = settings.createGroup("数值设置");
+        SettingGroup sgInt = settings.createGroup("整数设置");
+        SettingGroup sgString = settings.createGroup("文本设置");
+        SettingGroup sgColor = settings.createGroup("颜色设置");
 
-        SettingGroup sgBlockLists = settings.createGroup("Block Lists");
-        SettingGroup sgItemLists = settings.createGroup("Item Lists");
+        SettingGroup sgBlockLists = settings.createGroup("方块列表");
+        SettingGroup sgItemLists = settings.createGroup("物品列表");
 
         try {
             Class<? extends baritone.api.Settings> klass = BaritoneAPI.getSettings().getClass();
